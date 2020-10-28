@@ -1,5 +1,20 @@
 const player = document.getElementById("player");
 const gameBoard = document.getElementById("gameboard");
+let isTouched = false;
+let lives = 3;
+const ennemies = [];
+
+function generateRandomEnnemies() {
+    while(ennemies.length < 6) {
+        let x = Math.floor(Math.random() * (650 - 25 + 1)) + 25;
+        let y = Math.floor(Math.random() * (650 - 25 + 1)) + 25;
+        console.log(`x = ${x} et y = ${y}`);
+        ennemies.push([x, y]);
+    }
+    console.log(ennemies);
+}
+
+generateRandomEnnemies();
 
 function getStyleValue(element, property) {
   return parseInt(window.getComputedStyle(element).getPropertyValue(property));
@@ -14,9 +29,16 @@ function detecteExplosion(explosion) {
     playerTop >= explosionTop - 50 &&
     playerTop <= explosionTop + 50 &&
     playerLeft >= explosionLeft - 50 &&
-    playerLeft <= explosionLeft + 50
+    playerLeft <= explosionLeft + 50 &&
+    !isTouched
   ) {
-    console.log("touché");
+    lives--;
+    isTouched = true;
+    player.classList.add("touched");
+    setTimeout(function() {
+        isTouched = false;
+        player.classList.remove("touched");
+    }, 3000);
   }
 }
 
@@ -49,26 +71,26 @@ document.addEventListener("keydown", (e) => {
   let top = getStyleValue(player, "top");
   switch (e.code) {
     case "ArrowRight":
-      if (left <= 650) {
-        left += 25;
+      if (left < 700) {
+        left += 50;
         player.style.left = `${left}px`;
       }
       break;
     case "ArrowLeft":
       if (left > 25) {
-        left -= 25;
+        left -= 50;
         player.style.left = `${left}px`;
       }
       break;
     case "ArrowUp":
       if (top > 25) {
-        top -= 25;
+        top -= 50;
         player.style.top = `${top}px`;
       }
       break;
     case "ArrowDown":
-      if (top <= 650) {
-        top += 25;
+      if (top <= 700) {
+        top += 50;
         player.style.top = `${top}px`;
       }
       break;
