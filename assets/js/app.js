@@ -131,13 +131,21 @@ function createExplosion(bombTop, bombLeft) {
 
 //fonction pour créer une bombe
 function createBomb(playerTop, playerLeft) {
+  //on créé un élément div
   let bomb = document.createElement("div");
+  //on lui ajoute la classe bomb
   bomb.setAttribute("class", "bomb");
+  //on défini son top par rapport à celui du joueur
   bomb.style.top = `${playerTop}px`;
+  //on défini son left par rapport à celui du joueur
   bomb.style.left = `${playerLeft}px`;
+  //on ajoute la div dans notre plateau de jeu
   gameBoard.appendChild(bomb);
+  //au bout de 3s
   setTimeout(function () {
+    //on enlève la bombe du plateau de jeu  
     bomb.remove();
+    //on créé une explosion à la position souhaitée soit celle du joueur lorsqu'il a placé la bombe
     createExplosion(playerTop, playerLeft);
   }, 3000);
 }
