@@ -208,13 +208,13 @@ body {
     -o-border-radius: 50%;
     background-color: black;
     position: absolute;
-    animation: 1s linear explode;
+    animation: 3s linear blink;
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
     -moz-transform: translate(-50%, -50%);
     -ms-transform: translate(-50%, -50%);
     -o-transform: translate(-50%, -50%);
-    -webkit-animation: 1s linear explode;
+    -webkit-animation: 3s linear blink;
 }
 
 @keyframes blink {
@@ -251,3 +251,15 @@ body {
     -o-transform: translate(-50%, -50%);
 }
 
+.ennemi {
+    z-index: 1;
+    height: 50px;
+    width: 50px;
+    position: absolute;
+    background: #2c2c54;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+}
