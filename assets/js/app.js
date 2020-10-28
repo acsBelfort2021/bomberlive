@@ -10,6 +10,8 @@ let lives = 3;
 const nbEnnemies = 10;
 //tableau qui va contenir nos ennemis (des divs)
 const ennemies = [];
+//tableau de directions
+const directions = ["top", "right", "bottom", "left"];
 
 //fonction pour générer des positions initiales aléatoires à nos ennemis
 function generateRandomPositions() {
@@ -104,13 +106,16 @@ function detecteExplosion(explosion) {
     let ennemiLeft = getStyleValue(ennemies[i], "left");
     console.log(`ennemi top = ${ennemiTop} left = ${ennemiLeft}`);
     console.log(`bombe top = ${explosionTop} left = ${explosionLeft}`);
+    //si notre ennemi est dans l'explosion
     if (
       ennemiTop >= explosionTop - 50 &&
       ennemiTop <= explosionTop + 50 &&
       ennemiLeft >= explosionLeft - 50 &&
       ennemiLeft <= explosionLeft + 50
     ) {
+      //on retire l'ennemi du plateau de jeu
       gameBoard.removeChild(ennemies[i]);
+      //on retire l'ennemi correspondant dans le tableau
       ennemies.splice(i, 1);
     }
   }
@@ -143,45 +148,85 @@ function createBomb(playerTop, playerLeft) {
   gameBoard.appendChild(bomb);
   //au bout de 3s
   setTimeout(function () {
-    //on enlève la bombe du plateau de jeu  
+    //on enlève la bombe du plateau de jeu
     bomb.remove();
     //on créé une explosion à la position souhaitée soit celle du joueur lorsqu'il a placé la bombe
     createExplosion(playerTop, playerLeft);
   }, 3000);
 }
 
-//On écoute si l'utilisateur appuie sur des touches de son clavier
-document.addEventListener("keydown", (e) => {
-  let left = getStyleValue(player, "left");
-  let top = getStyleValue(player, "top");
-  switch (e.code) {
-    case "ArrowRight":
-      if (left < 700) {
-        left += 50;
-        player.style.left = `${left}px`;
-      }
-      break;
-    case "ArrowLeft":
-      if (left > 25) {
-        left -= 50;
-        player.style.left = `${left}px`;
-      }
-      break;
-    case "ArrowUp":
+//fonction pour faire bouger les éléments du plateau de jeu, le paramètre element représente l'élément du plateau de jeu à faire bouger, direction est une chaîne de caractère qui décrit la direction
+function move(element, direction) {
+  //on récupère le left de l'élément à faire bouger  
+  let left = getStyleValue(element, "left");
+  //on récupère le top de l'élément à faire bouger
+  let top = getStyleValue(element, "top");
+  //selon la direction
+  switch (direction) {
+    case "top":
       if (top > 25) {
         top -= 50;
-        player.style.top = `${top}px`;
+        element.style.top = `${top}px`;
       }
       break;
-    case "ArrowDown":
+    case "right":
+      if (left < 700) {
+        left += 50;
+        element.style.left = `${left}px`;
+      }
+      break;
+    case "bottom":
       if (top <= 700) {
         top += 50;
-        player.style.top = `${top}px`;
+        element.style.top = `${top}px`;
       }
       break;
+    case "left":
+      if (left > 25) {
+        left -= 50;
+        element.style.left = `${left}px`;
+      }
+      break;
+
+    default:
+      break;
+  }
+}
+
+//On écoute si l'utilisateur appuie sur des touches de son clavier
+document.addEventListener("keydown", (e) => {
+  switch (e.code) {
+    case "ArrowRight":
+      move(player, "right");
+      break;
+    case "ArrowLeft":
+      move(player, "left");
+      break;
+    case "ArrowUp":
+      move(player, "top");  
+      break;
+    case "ArrowDown":
+      move(player, "bottom")
+      break;
     case "Space":
-      createBomb(top, left);
+      createBomb(
+        getStyleValue(player, "top"),
+        getStyleValue(player, "left")
+      );
     default:
       break;
   }
 });
+
+//faire bouger nos ennemies de manière aléatoire toutes les secondes
+setInterval(function () {
+    //on parcourt le tableau d'ennemis
+    ennemies.forEach(
+        //pour chaque ennemi du tableau d'ennemis
+        ennemie => {
+        //on choisit une direction aléatoire
+        let random = Math.floor(Math.random() * 4);
+        //on fait bouger l'ennemi dans la direction choisi
+        move(ennemie, directions[random]);
+    });
+}, 1000);
