@@ -74,13 +74,13 @@ function getStyleValue(element, property) {
 
 //fonction pour détecter si une explosion touche un élément de notre plateau de jeu
 function detecteExplosion(explosion) {
-  //on rédupère le top de notre explosion
+  //on récupère le top de notre explosion
   let explosionTop = getStyleValue(explosion, "top");
-  //on rédupère le left de notre explosion
+  //on récupère le left de notre explosion
   let explosionLeft = getStyleValue(explosion, "left");
-  //on rédupère le top de notre joueur
+  //on récupère le top de notre joueur
   let playerTop = getStyleValue(player, "top");
-  //on rédupère le left de notre joueur
+  //on récupère le left de notre joueur
   let playerLeft = getStyleValue(player, "left");
   //si notre joueur est dans l'explosion et n'est pas dans des frames d'invulnérabilité (soit isTouched à true)
   if (
@@ -104,8 +104,7 @@ function detecteExplosion(explosion) {
   for (let i = ennemies.length - 1; i >= 0; i--) {
     let ennemiTop = getStyleValue(ennemies[i], "top");
     let ennemiLeft = getStyleValue(ennemies[i], "left");
-    console.log(`ennemi top = ${ennemiTop} left = ${ennemiLeft}`);
-    console.log(`bombe top = ${explosionTop} left = ${explosionLeft}`);
+   
     //si notre ennemi est dans l'explosion
     if (
       ennemiTop >= explosionTop - 50 &&
@@ -203,17 +202,18 @@ document.addEventListener("keydown", (e) => {
       move(player, "left");
       break;
     case "ArrowUp":
-      move(player, "top");  
+      move(player, "top");
       break;
     case "ArrowDown":
-      move(player, "bottom")
+      move(player, "bottom");
       break;
     case "Space":
-      createBomb(
-        getStyleValue(player, "top"),
-        getStyleValue(player, "left")
-      );
+      createBomb(getStyleValue(player, "top"), getStyleValue(player, "left"));
     default:
+      break;
+    case "0":
+      //version lazy pour faire une nouvelle partie
+      location.reload();
       break;
   }
 });
