@@ -1,141 +1,8 @@
-/* http://meyerweb.com/eric/tools/css/reset/ 
-   v2.0 | 20110126
-   License: none (public domain)
-*/
-
-html,
-body,
-div,
-span,
-applet,
-object,
-iframe,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-blockquote,
-pre,
-a,
-abbr,
-acronym,
-address,
-big,
-cite,
-code,
-del,
-dfn,
-em,
-img,
-ins,
-kbd,
-q,
-s,
-samp,
-small,
-strike,
-strong,
-sub,
-sup,
-tt,
-var,
-b,
-u,
-i,
-center,
-dl,
-dt,
-dd,
-ol,
-ul,
-li,
-fieldset,
-form,
-label,
-legend,
-table,
-caption,
-tbody,
-tfoot,
-thead,
-tr,
-th,
-td,
-article,
-aside,
-canvas,
-details,
-embed,
-figure,
-figcaption,
-footer,
-header,
-hgroup,
-menu,
-nav,
-output,
-ruby,
-section,
-summary,
-time,
-mark,
-audio,
-video {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 100%;
-    font: inherit;
-    vertical-align: baseline;
+@font-face {
+    font-family: "8bits";
+    src: url("../fonts/8-BitMadness.ttf");
 }
 
-/* HTML5 display-role reset for older browsers */
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section {
-    display: block;
-}
-
-body {
-    line-height: 1;
-}
-
-ol,
-ul {
-    list-style: none;
-}
-
-blockquote,
-q {
-    quotes: none;
-}
-
-blockquote:before,
-blockquote:after,
-q:before,
-q:after {
-    content: '';
-    content: none;
-}
-
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-
-
-/** MON CSS, à corriger si besoin au fur et à mesure **/
 *,
 *::after,
 *::before {
@@ -143,6 +10,7 @@ table {
 }
 
 body {
+    font-family: "8bits";
     transform: scale(0.75);
     overflow-y: hidden;
     padding: 0;
@@ -157,21 +25,100 @@ body {
     -o-transform: scale(0.75);
 }
 
-#gameboard {
-    height: 800px;
+#gameBoard {
     width: 800px;
-    background-color: #a4b0be;
-    border: 25px solid #84817a;
+    height: 800px;
     margin: auto;
+    background: #aaa69d;
+    border: 25px solid #84817a;
     position: relative;
 }
 
 #player {
-    position: absolute;
     z-index: 2;
     height: 50px;
     width: 50px;
-    background-color: #ff4757;
+    position: absolute;
+    background: #ffb142;
+    left: 350px;
+    top: 350px;
+}
+
+.ennemi {
+    z-index: 1;
+    height: 50px;
+    width: 50px;
+    position: absolute;
+    background: #2c2c54;
+}
+
+.bomb {
+    z-index: 3;
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    position: absolute;
+    background: #b33939;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    animation: blink 1s reverse infinite;
+    -webkit-animation: blink 1s reverse infinite;
+}
+
+.explosion {
+    z-index: 4;
+    width: 150px;
+    height: 150px;
+    position: absolute;
+    background: #cd6133;
+}
+
+.touched {
+    animation: touchedFrames 1s linear infinite;
+    -webkit-animation: touchedFrames 1s linear infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes touchedFrames {
+    0% {
+        background: #000;
+        opacity: 0.75;
+    }
+
+    50% {
+        background: #ffb142;
+        opacity: 0.75;
+    }
+
+    100% {
+        background: #000;
+        opacity: 0.75;
+    }
+}
+
+.gameover {
+    z-index: 5;
+    color: #b33939;
+    position: absolute;
+    width: 80%;
+    margin: 0;
+    text-align: center;
+    font-size: 5rem;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -181,69 +128,16 @@ body {
     -o-transform: translate(-50%, -50%);
 }
 
-.touched {
-    animation-name: touched;
-    animation-iteration-count: 3;
-    animation-duration: 1s;
-}
-
-@keyframes touched {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-.bomb {
-    height: 50px;
-    width: 50px;
-    z-index: 3;
-    border-radius: 50%;
-    -webkit-border-radius: 50%;
-    -moz-border-radius: 50%;
-    -ms-border-radius: 50%;
-    -o-border-radius: 50%;
-    background-color: black;
+.win {
+    z-index: 5;
+    color: #218c74;
     position: absolute;
-    animation: 3s linear blink;
-    transform: translate(-50%, -50%);
-    -webkit-transform: translate(-50%, -50%);
-    -moz-transform: translate(-50%, -50%);
-    -ms-transform: translate(-50%, -50%);
-    -o-transform: translate(-50%, -50%);
-    -webkit-animation: 3s linear blink;
-}
-
-@keyframes blink {
-    0% {
-        background-color: red;
-    }
-
-    25% {
-        background-color: black;
-    }
-
-    50% {
-        background-color: red;
-    }
-
-    75% {
-        background-color: black;
-    }
-
-    100% {
-        background-color: red;
-    }
-}
-
-.explosion {
-    width: 150px;
-    height: 150px;
-    background-color: rgba(255, 128, 0);
-    position: absolute;
+    width: 80%;
+    margin: 0;
+    text-align: center;
+    font-size: 5rem;
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
     -moz-transform: translate(-50%, -50%);
@@ -251,12 +145,23 @@ body {
     -o-transform: translate(-50%, -50%);
 }
 
-.ennemi {
-    z-index: 1;
-    height: 50px;
-    width: 50px;
-    position: absolute;
-    background: #2c2c54;
+#rules {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    font-size: 1.8rem;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+}
+
+#lives {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    font-size: 1.8rem;
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
     -moz-transform: translate(-50%, -50%);

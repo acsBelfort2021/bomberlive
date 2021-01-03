@@ -1,232 +1,287 @@
-//le joueur
-const player = document.getElementById("player");
-//le plateau de jeu
-const gameBoard = document.getElementById("gameboard");
-//est-ce que le joueur est touché ou non, par déafut à false
-let isTouched = false;
-//nombre de vies de notre personnage
-let lives = 3;
-//nombre d'ennemis
-const nbEnnemies = 10;
-//tableau qui va contenir nos ennemis (des divs)
-const ennemies = [];
-//tableau de directions
-const directions = ["top", "right", "bottom", "left"];
+/**
+ * VARIABLES DE NOTRE JEU, certaines pourraient être choisies par le joueur ?
+ */
 
-//fonction pour générer des positions initiales aléatoires à nos ennemis
-function generateRandomPositions() {
-  //tableau qui va contenir nos différentes positions aléatoires initiales
-  const randomPositions = [];
-  //tant que ce tableau ne fait pas la taille du nombre d'ennemis définis
-  while (randomPositions.length < nbEnnemies) {
+//le terrain de jeu
+const gameBoard = document.getElementById("gameBoard");
+
+//notre joueur, une div
+const player = document.createElement("div");
+
+//le tableau des ennemis et son nombre
+const ennemies = [];
+const nbEnnemies = 10;
+
+//le tableau des directions, servira plus tard, les noms écris ici servant surtout à être "plus parlant"
+const directions = ["up", "down", "left", "right"];
+
+//nb de vies et la span où les faire apparaître
+let lives = 100;
+const livesSpan = document.getElementById("nbLives");
+
+//afficher les nombre de vies
+function displayLives() {
+  livesSpan.innerText = lives;
+}
+
+//pour savoir si notre perso a des frames d'invulnérabilité ou non
+let invincible = false;
+
+//textes de fin, gagné ou perdu
+const textGameOver = "GAME OVER";
+const textWin = "YOU WIN !";
+
+let endgame = false;
+
+/**
+ * INITIALISATION DU JEU
+ */
+
+//On affiche les vies au début du jeu
+displayLives();
+
+//On créé notre personnage, un carré jaune (voir CSS #player)
+player.setAttribute("id", "player");
+gameBoard.appendChild(player);
+
+//On créé nos ennemis, on peut faire appeler notre fonction en avance grâce au hoisiting
+createEnnemies();
+
+/**
+ * FONCTIONS POUR GÉRER LE JEU
+ */
+
+//nous allons beaucoup utiliser cet enchaînement de fonction (parseInt) et méthodes JS (getComputedStyle, getPropertyValue), du coup nous créons une fonction pour que l'écriture de cela soit plus rapide ; cette fonction va nous servir pour détecter les collisions et déplacer notre personnage et ennemis
+function getComputedStyleInt(element, property) {
+  return parseInt(
+    window.getComputedStyle(element).getPropertyValue(property),
+    10
+  );
+}
+
+//fonction qui créé des positions aléatoires pour les ennemis avec des contraintes (while, if, for)
+function randomPosEnnemies() {
+  const positions = [];
+  let x;
+  let y;
+  while (positions.length < nbEnnemies) {
     //on  créé des valeurs aléatoires pour une position sur l'axe x et y qui ont des valeurs multiples de 50, soit la longueur et largeur de nos éléments, et qui sont adaptés à la taille de notre plateau de jeu
-    x = Math.floor(Math.random() * 15) * 50 + 25; //+25 à cause du border du plateau de jeu
-    y = Math.floor(Math.random() * 15) * 50 + 25; //+25 à cause du border du plateau de jeu
+    x = Math.floor(Math.random() * 15) * 50;
+    y = Math.floor(Math.random() * 15) * 50;
     //si ces valeurs ne sont pas trop proches du centre, soit la zone où se trouve notre personnage
     if (!(x >= 250 && x <= 450) && !(y >= 250 && y <= 450)) {
-      //un booléen représentant si l'on peut ajouter le duo x, y dans notre tableau de positions
       let add = true;
-      //on parcours notre tableau de positions aléatoire
-      for (let j = 0; j < randomPositions.length; j++) {
+      for (let i = 0; i < positions.length; i++) {
         //si cette position existe déjà dans notre tableau de positions, càd qu'un ennemi a déjà cette position
-        if (randomPositions[j][0] === x && randomPositions[j][1] === y) {
+        if (positions[i][0] === x && positions[i][1] === y) {
           //on empêche le fait de rajouter cette position dans notre tableau de position
           add = false;
         }
       }
       //si on a respecté toutes les conditions ==> add = true
       if (add) {
-        //on ajoute le duo x, y dans notre tableau, ce qui incrémente pour notre boucle while
-        randomPositions.push([x, y]);
+        positions.push([x, y]);
       }
     }
   }
-  //on retourne le tableau de positions aléatoires
-  return randomPositions;
+  return positions;
 }
 
-//fonction pour créer les ennemis
+//créer les ennemies avec les contraintes issues de la fonction randomPosEnnemies
 function createEnnemies() {
-  //on récupère les positions aléatoires grâce à la fonction generateRandomPositions()
-  const positions = generateRandomPositions();
-  //pour le nombre d'ennemis que l'on souhaite
+  const positions = randomPosEnnemies();
   for (let i = 0; i < nbEnnemies; i++) {
-    //on créé une div
     ennemies[i] = document.createElement("div");
-    //on lui ajoute la classe ennemi
     ennemies[i].setAttribute("class", "ennemi");
-    //on lui donne un style inline pour son top
     ennemies[i].style.top = positions[i][0] + "px";
-    //on lui donne un style inline pour son left
     ennemies[i].style.left = positions[i][1] + "px";
-    //on ajoute l'ennemi au plateau de jeu
     gameBoard.appendChild(ennemies[i]);
   }
 }
 
-//on appelle la fonction pour créer les ennemis au chargement de la page
-createEnnemies();
-
-//fonction pour récupérer plus rapidement les valeurs calculées des propriétés CSS des éléments
-function getStyleValue(element, property) {
-  return parseInt(window.getComputedStyle(element).getPropertyValue(property));
+//fonction pour afficher l'état du jeu (win or lose)
+function displayGameStatus(className, textToDisplay) {
+  const text = document.createElement("h2");
+  text.setAttribute("class", className);
+  text.innerText = textToDisplay;
+  gameBoard.appendChild(text);
+  endgame = true;
 }
 
-//fonction pour détecter si une explosion touche un élément de notre plateau de jeu
-function detecteExplosion(explosion) {
-  //on récupère le top de notre explosion
-  let explosionTop = getStyleValue(explosion, "top");
-  //on récupère le left de notre explosion
-  let explosionLeft = getStyleValue(explosion, "left");
-  //on récupère le top de notre joueur
-  let playerTop = getStyleValue(player, "top");
-  //on récupère le left de notre joueur
-  let playerLeft = getStyleValue(player, "left");
-  //si notre joueur est dans l'explosion et n'est pas dans des frames d'invulnérabilité (soit isTouched à true)
-  if (
-    playerTop >= explosionTop - 50 &&
-    playerTop <= explosionTop + 50 &&
-    playerLeft >= explosionLeft - 50 &&
-    playerLeft <= explosionLeft + 50 &&
-    !isTouched
-  ) {
-    //on diminue son nombre de vie
-    lives--;
-    //on passe le fait que le joueur soit touché à vrai
-    isTouched = true;
-    player.classList.add("touched");
-    setTimeout(function () {
-      isTouched = false;
-      player.classList.remove("touched");
-    }, 3000);
+//fonction pour signaler au joueur qu'il a gagné
+function win() {
+  displayGameStatus("win", textWin);
+}
+
+//fonction pour signaler au joueur qu'il a perdu
+function gameOver() {
+  gameBoard.removeChild(player);
+  displayGameStatus("gameover", textGameOver);
+}
+
+//fonction qui check les vies de notre personnage
+function checkLifeHero() {
+  lives--;
+  displayLives();
+  player.classList.add("touched");
+  invincible = true;
+  setTimeout(() => {
+    player.classList.remove("touched");
+    invincible = false;
+  }, 3000);
+  if (lives <= 0) {
+    gameOver();
   }
-  //On parcours le tableau d'ennemis dans le sens inverse, cela est recommandé lorsque l'on désire retirer un élément d'un tableau au fur et à mesure qu'on le parcours
-  for (let i = ennemies.length - 1; i >= 0; i--) {
-    let ennemiTop = getStyleValue(ennemies[i], "top");
-    let ennemiLeft = getStyleValue(ennemies[i], "left");
-   
-    //si notre ennemi est dans l'explosion
-    if (
-      ennemiTop >= explosionTop - 50 &&
-      ennemiTop <= explosionTop + 50 &&
-      ennemiLeft >= explosionLeft - 50 &&
-      ennemiLeft <= explosionLeft + 50
-    ) {
-      //on retire l'ennemi du plateau de jeu
-      gameBoard.removeChild(ennemies[i]);
-      //on retire l'ennemi correspondant dans le tableau
-      ennemies.splice(i, 1);
+}
+
+//fonction qui détecte si les ennemis touchent notre personnage
+function detectionPlayerEnnemies() {
+  let playerTop = getComputedStyleInt(player, "top");
+  let playerLeft = getComputedStyleInt(player, "left");
+
+  //Si notre personnage n'est pas invincible
+  if (!invincible) {
+    //On vérifie pour chaques ennemis
+    for (let i = 0; i < ennemies.length; i++) {
+      let ennemiTop = getComputedStyleInt(ennemies[i], "top");
+      let ennemiLeft = getComputedStyleInt(ennemies[i], "left");
+
+      if (ennemiTop === playerTop && ennemiLeft === playerLeft) {
+        checkLifeHero();
+      }
     }
   }
 }
 
-//fonction pour créer une explosion
-function createExplosion(bombTop, bombLeft) {
-  let explosion = document.createElement("div");
-  explosion.setAttribute("class", "explosion");
-  explosion.style.top = `${bombTop}px`;
-  explosion.style.left = `${bombLeft}px`;
-  gameBoard.appendChild(explosion);
-  setTimeout(function () {
-    detecteExplosion(explosion);
-    explosion.remove();
+//fonction qui sert à détecter une collision entre l'explosion et notre personnage et les ennemis
+function detectionExplosion(bomb) {
+  let bombTop = getComputedStyleInt(bomb, "top");
+  let bombLeft = getComputedStyleInt(bomb, "left");
+  let playerTop = getComputedStyleInt(player, "top");
+  let playerLeft = getComputedStyleInt(player, "left");
+  console.log(ennemies);
+  //on vérifie pour chaque ennemi s'il est dans le périmètre de la bombe
+  for (let i = 0; i < ennemies.length; i++) {
+    let ennemiTop = getComputedStyleInt(ennemies[i], "top");
+
+    let ennemiLeft = getComputedStyleInt(ennemies[i], "left");
+
+    if (
+      ennemiTop >= bombTop &&
+      ennemiTop <= bombTop + 100 &&
+      ennemiLeft >= bombLeft &&
+      ennemiLeft <= bombLeft + 100 &&
+      !endgame
+    ) {
+      gameBoard.removeChild(ennemies[i]);
+      ennemies.splice(i, 1);
+      console.log(ennemies);
+      if (ennemies.length <= 0) {
+        win();
+      }
+    }
+  }
+
+  if (!invincible && !endgame) {
+    if (
+      playerTop >= bombTop &&
+      playerTop <= bombTop + 100 &&
+      playerLeft >= bombLeft &&
+      playerLeft <= bombLeft + 100
+    ) {
+      checkLifeHero();
+    }
+  }
+
+  setTimeout(() => {
+    gameBoard.removeChild(bomb);
   }, 300);
 }
 
-//fonction pour créer une bombe
-function createBomb(playerTop, playerLeft) {
-  //on créé un élément div
+//fonction qui sert à créer une explosion
+function createExplosion(bomb) {
+  //explosion.setAttribute("class", "explosion");
+  bomb.classList.add("explosion");
+  bomb.classList.remove("bomb");
+  bomb.style.top = parseInt(bomb.style.top) - 50 + "px";
+  bomb.style.left = parseInt(bomb.style.left) - 50 + "px";
+  detectionExplosion(bomb);
+}
+
+//fonction qui sert à créer une bombe
+function createBomb(top, left) {
   let bomb = document.createElement("div");
-  //on lui ajoute la classe bomb
   bomb.setAttribute("class", "bomb");
-  //on défini son top par rapport à celui du joueur
-  bomb.style.top = `${playerTop}px`;
-  //on défini son left par rapport à celui du joueur
-  bomb.style.left = `${playerLeft}px`;
-  //on ajoute la div dans notre plateau de jeu
+  bomb.style.top = top + "px";
+  bomb.style.left = left + "px";
   gameBoard.appendChild(bomb);
-  //au bout de 3s
-  setTimeout(function () {
-    //on enlève la bombe du plateau de jeu
-    bomb.remove();
-    //on créé une explosion à la position souhaitée soit celle du joueur lorsqu'il a placé la bombe
-    createExplosion(playerTop, playerLeft);
+  setTimeout(() => {
+    createExplosion(bomb);
   }, 3000);
 }
 
-//fonction pour faire bouger les éléments du plateau de jeu, le paramètre element représente l'élément du plateau de jeu à faire bouger, direction est une chaîne de caractère qui décrit la direction
+//fonction qui gère les déplacements de notre peronnage et des ennemis car ils se déplacent à peu près de la même façon !
 function move(element, direction) {
-  //on récupère le left de l'élément à faire bouger  
-  let left = getStyleValue(element, "left");
-  //on récupère le top de l'élément à faire bouger
-  let top = getStyleValue(element, "top");
-  //selon la direction
+  let topElement = getComputedStyleInt(element, "top");
+  let leftElement = getComputedStyleInt(element, "left");
+
   switch (direction) {
-    case "top":
-      if (top > 25) {
-        top -= 50;
-        element.style.top = `${top}px`;
-      }
-      break;
-    case "right":
-      if (left < 700) {
-        left += 50;
-        element.style.left = `${left}px`;
-      }
-      break;
-    case "bottom":
-      if (top <= 700) {
-        top += 50;
-        element.style.top = `${top}px`;
-      }
-      break;
-    case "left":
-      if (left > 25) {
-        left -= 50;
-        element.style.left = `${left}px`;
+    case "up":
+      if (topElement > 0) {
+        element.style.top = topElement - 50 + "px";
       }
       break;
 
-    default:
+    case "down":
+      if (topElement < 700) {
+        element.style.top = topElement + 50 + "px";
+      }
+      break;
+
+    case "left":
+      if (leftElement > 0) {
+        element.style.left = leftElement - 50 + "px";
+      }
+      break;
+
+    case "right":
+      if (leftElement < 700) {
+        element.style.left = leftElement + 50 + "px";
+      }
       break;
   }
+  detectionPlayerEnnemies();
 }
 
-//On écoute si l'utilisateur appuie sur des touches de son clavier
-document.addEventListener("keydown", (e) => {
-  switch (e.code) {
-    case "ArrowRight":
-      move(player, "right");
-      break;
-    case "ArrowLeft":
-      move(player, "left");
-      break;
-    case "ArrowUp":
-      move(player, "top");
-      break;
-    case "ArrowDown":
-      move(player, "bottom");
-      break;
-    case "Space":
-      createBomb(getStyleValue(player, "top"), getStyleValue(player, "left"));
-    default:
-      break;
-    case "0":
-      //version lazy pour faire une nouvelle partie
-      location.reload();
-      break;
+/**
+ * LES ÉLÉMENTS À VÉRIFIER/FAIRE EN "PERMANENCE" ==> addEventListener + setInterval
+ */
+
+//on check les interactions de notre utilisateur sur les touches prévues pour cela, encore un famoso addEventListener
+document.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowUp") {
+    move(player, "up");
+  } else if (e.key === "ArrowDown") {
+    move(player, "down");
+  } else if (e.key === "ArrowLeft") {
+    move(player, "left");
+  } else if (e.key === "ArrowRight") {
+    move(player, "right");
+  } else if (e.key === " " && !endgame) {
+    createBomb(
+      getComputedStyleInt(player, "top"),
+      getComputedStyleInt(player, "left")
+    );
+  } else if (e.key === "0") {
+    //version lazy pour faire une nouvelle partie
+    location.reload();
   }
 });
 
-//faire bouger nos ennemies de manière aléatoire toutes les secondes
+//faire bouger les ennemis toutes les secondes
 setInterval(function () {
-    //on parcourt le tableau d'ennemis
-    ennemies.forEach(
-        //pour chaque ennemi du tableau d'ennemis
-        ennemie => {
-        //on choisit une direction aléatoire
-        let random = Math.floor(Math.random() * 4);
-        //on fait bouger l'ennemi dans la direction choisi
-        move(ennemie, directions[random]);
-    });
+  for (let i = 0; i < ennemies.length; i++) {
+    let random = Math.floor(Math.random() * 4);
+    move(ennemies[i], directions[random]);
+  }
 }, 1000);
