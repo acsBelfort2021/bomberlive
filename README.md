@@ -1,0 +1,1 @@
+Checkez sur la branche v2 pour une version plus aboutie mais avec des calculs fait différemment.
